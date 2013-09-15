@@ -27,6 +27,7 @@ begin
     def setup
       ENV["LC_ALL"] = nil
       ENV["LC_MESSAGES"] = nil
+      ENV["LC_CTYPE"] = nil
       ENV["LANG"] = nil
       ENV["LANGUAGE"] = nil
     end

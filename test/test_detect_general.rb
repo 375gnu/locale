@@ -28,6 +28,7 @@ class TestDetectGeneral < Test::Unit::TestCase
     Locale.clear_all
     ENV["LC_ALL"] = nil
     ENV["LC_MESSAGES"] = nil
+    ENV["LC_CTYPE"] = nil
     ENV["LANG"] = nil
     ENV["LANGUAGE"] = nil
   end
@@ -35,6 +36,7 @@ class TestDetectGeneral < Test::Unit::TestCase
   def test_lc_all
     ENV["LC_ALL"] = "ja_JP.eucJP"
     ENV["LC_MESSAGES"] = "zh_CN.UTF-8"  #Ignored.
+    ENV["LC_CTYPE"] = "C"  #Ignored.
     ENV["LANG"] = "ko_KR.UTF-8"  #Ignored.
     ENV["LANGUAGE"] = nil
 
@@ -51,7 +53,23 @@ class TestDetectGeneral < Test::Unit::TestCase
   def test_lc_messages
     ENV["LC_ALL"] = nil
     ENV["LC_MESSAGES"] = "ja_JP.eucJP"
-    ENV["LANG"] = "ko_KR.UTF-8"  #Ignored.
+    ENV["LANG"] = "ko_KR.UTF-8"
+    ENV["LANGUAGE"] = nil
+
+    lang = Locale.current[0]
+    assert_equal Locale::Tag::Posix, lang.class
+    assert_equal "ja", lang.language
+    assert_equal "JP", lang.region
+    assert_equal "UTF-8", lang.charset
+    assert_equal Locale::Tag::Posix.new("ja", "JP", "UTF-8"), lang
+
+    assert_equal "UTF-8", Locale.charset
+  end
+
+  def test_lc_ctype
+    ENV["LC_ALL"] = nil
+    ENV["LC_CTYPE"] = "ko_KR.eucJP"
+    ENV["LANG"] = "ja_JP.UTF-8"
     ENV["LANGUAGE"] = nil
 
     lang = Locale.current[0]
