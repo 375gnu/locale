@@ -37,11 +37,28 @@ module Locale
       # Returns: the locale as Locale::Tag::Posix.
       def locale
         # At least one environment valiables should be set on *nix system.
-        [ENV["LC_ALL"], ENV["LC_MESSAGES"], ENV["LANG"]].each do |loc|
-          if loc != nil and loc.size > 0
-            return Locale::Tag::Posix.parse(loc)
-          end
+        if lc_all = good_env?("LC_ALL")
+          return lc_all
         end
+
+        lc_ctype = good_env?("LC_CTYPE")
+        lc_messages = good_env?("LC_MESSAGES")
+        lang = good_env?("LANG")
+
+        if lc_messages
+          if lc_ctype
+            lc_messages.charset = lc_ctype.charset
+          elsif lang
+            lc_messages.charset = lang.charset
+          end
+          return lc_messages
+        end
+
+        if lang
+          lang.charset = lc_ctype.charset if lc_ctype
+          return lang
+        end
+
         nil
       end
 
@@ -69,7 +86,12 @@ module Locale
           nil
         end
       end
-      
+
+      private
+      def self.good_env?(env)
+        loc = ENV[env]
+        (loc != nil and loc.size > 0) ? Locale::Tag::Posix.parse(loc) : nil
+      end
     end
 
     MODULES[:env] = Env
